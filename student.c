@@ -1,3 +1,5 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,16 +17,36 @@ char getGrade(float marks)
         return 'D';
     else if (marks >= 50 && marks < 60)
         return 'E';
-    else
+    else if (marks >= 0 && marks < 50)
         return 'F';
+    else
+        return '?';
+}
+
+int isValidName(const char *name)
+{
+    int i;
+    for (i = 0; name[i] != '\0'; i++)
+    {
+        if (!((name[i] >= 'A' && name[i] <= 'Z') ||
+              (name[i] >= 'a' && name[i] <= 'z') ||
+              name[i] == ' '))
+        {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int isIdUnique(int id)
 {
+    if (id <= 0)
+        return 0;
+
     FILE *fp = fopen("data.txt", "r");
     if (fp == NULL)
     {
-        return 1; 
+        return 1;
     }
 
     Student s;
@@ -33,37 +55,69 @@ int isIdUnique(int id)
         if (s.id == id)
         {
             fclose(fp);
-            return 0; 
+            return 0;
         }
     }
 
     fclose(fp);
-    return 1; 
+    return 1;
 }
 
 void addStudent()
 {
     Student s;
-    printf("Enter ID: ");
-    scanf("%d", &s.id);
 
-    if (!isIdUnique(s.id))
+    while (1)
     {
-        printf("Error: Student with ID %d already exists!\n", s.id);
-        return;
+        printf("Enter ID (must be positive integer): ");
+        if (scanf("%d", &s.id) != 1)
+        {
+            printf("Invalid input. Please enter a number.\n");
+            while (getchar() != '\n')
+                ;
+            continue;
+        }
+
+        if (s.id <= 0)
+        {
+            printf("ID must be a positive number.\n");
+            continue;
+        }
+
+        if (!isIdUnique(s.id))
+        {
+            printf("Error: Student with ID %d already exists!\n", s.id);
+            return;
+        }
+        break;
     }
 
     printf("Enter Name: ");
     scanf(" %[^\n]", s.name);
-    
-    // Validate marks input
-    do {
+    while (strlen(s.name) == 0 || !isValidName(s.name))
+    {
+        printf("Invalid name. Use only alphabets and spaces.\nEnter Name again: ");
+        scanf(" %[^\n]", s.name);
+    }
+
+    while (1)
+    {
         printf("Enter Marks (0-100): ");
-        scanf("%f", &s.marks);
-        if (s.marks < 0 || s.marks > 100) {
-            printf("Invalid marks! Please enter a value between 0 and 100.\n");
+        if (scanf("%f", &s.marks) != 1)
+        {
+            printf("Invalid input. Please enter a number.\n");
+            while (getchar() != '\n')
+                ;
+            continue;
         }
-    } while (s.marks < 0 || s.marks > 100);
+
+        if (s.marks < 0 || s.marks > 100)
+        {
+            printf("Marks must be between 0 and 100.\n");
+            continue;
+        }
+        break;
+    }
 
     FILE *fp = fopen("data.txt", "a");
     if (fp == NULL)
@@ -77,6 +131,7 @@ void addStudent()
     printf("Student added successfully!\n");
 }
 
+
 void displayStudents()
 {
     FILE *fp = fopen("data.txt", "r");
@@ -87,17 +142,24 @@ void displayStudents()
     }
 
     Student s;
-    printf("ID\t Name\t   Marks\t    Grade\n");
-    printf("----------------------------\n");
+    printf("ID\tName\t\tMarks\tGrade\n");
+    printf("---------------------------------\n");
     while (fread(&s, sizeof(Student), 1, fp))
     {
-        printf("%d\t%-15s\t%.2f\t%c\n", s.id, s.name, s.marks, getGrade(s.marks));
+        printf("%d\t%-15s\t%.2f\t%c\n",
+               s.id, s.name, s.marks, getGrade(s.marks));
     }
     fclose(fp);
 }
 
 void searchStudent(int id)
 {
+    if (id <= 0)
+    {
+        printf("Invalid ID. Must be positive number.\n");
+        return;
+    }
+
     FILE *fp = fopen("data.txt", "r");
     if (fp == NULL)
     {
@@ -111,7 +173,9 @@ void searchStudent(int id)
     {
         if (s.id == id)
         {
-            printf("ID: %d\nName: %s\nMarks: %.2f\nGrade: %c\n", s.id, s.name, s.marks, getGrade(s.marks));
+            printf("\nStudent Details:\n");
+            printf("ID: %d\nName: %s\nMarks: %.2f\nGrade: %c\n",
+                   s.id, s.name, s.marks, getGrade(s.marks));
             found = 1;
             break;
         }
@@ -121,8 +185,15 @@ void searchStudent(int id)
     fclose(fp);
 }
 
+// Delete student
 void deleteStudent(int id)
 {
+    if (id <= 0)
+    {
+        printf("Invalid ID. Must be positive number.\n");
+        return;
+    }
+
     FILE *fp = fopen("data.txt", "r");
     if (fp == NULL)
     {
@@ -154,13 +225,19 @@ void deleteStudent(int id)
     rename("temp.txt", "data.txt");
 
     if (found)
-        printf("Record deleted.\n");
+        printf("Student record deleted successfully.\n");
     else
-        printf("Record not found.\n");
+        printf("Student not found.\n");
 }
 
 void updateStudent(int id)
 {
+    if (id <= 0)
+    {
+        printf("Invalid ID. Must be positive number.\n");
+        return;
+    }
+
     FILE *fp = fopen("data.txt", "r");
     if (fp == NULL)
     {
@@ -182,18 +259,35 @@ void updateStudent(int id)
     {
         if (s.id == id)
         {
+            printf("Current Details:\n");
+            printf("ID: %d\nName: %s\nMarks: %.2f\n", s.id, s.name, s.marks);
+
             printf("Enter new name: ");
             scanf(" %[^\n]", s.name);
-            
-           
-            do {
+            while (strlen(s.name) == 0 || !isValidName(s.name))
+            {
+                printf("Invalid name. Use only alphabets and spaces.\nEnter name again: ");
+                scanf(" %[^\n]", s.name);
+            }
+
+            while (1)
+            {
                 printf("Enter new marks (0-100): ");
-                scanf("%f", &s.marks);
-                if (s.marks < 0 || s.marks > 100) {
-                    printf("Invalid marks! Please enter a value between 0 and 100.\n");
+                if (scanf("%f", &s.marks) != 1)
+                {
+                    printf("Invalid input. Please enter a number.\n");
+                    while (getchar() != '\n')
+                        ;
+                    continue;
                 }
-            } while (s.marks < 0 || s.marks > 100);
-            
+                if (s.marks < 0 || s.marks > 100)
+                {
+                    printf("Marks must be between 0 and 100.\n");
+                    continue;
+                }
+                break;
+            }
+
             found = 1;
         }
         fwrite(&s, sizeof(Student), 1, temp);
@@ -205,10 +299,11 @@ void updateStudent(int id)
     rename("temp.txt", "data.txt");
 
     if (found)
-        printf("Record updated.\n");
+        printf("Student record updated successfully.\n");
     else
-        printf("Record not found.\n");
+        printf("Student not found.\n");
 }
+
 
 
     

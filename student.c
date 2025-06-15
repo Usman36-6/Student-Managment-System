@@ -6,30 +6,67 @@
 
 char getGrade(float marks)
 {
-    if (marks >= 90&&marks<=100)
+    if (marks >= 90 && marks <= 100)
         return 'A';
-    else if (marks >= 80&&marks<=90)
+    else if (marks >= 80 && marks < 90)
         return 'B';
-    else if (marks >= 70&&marks<=80)
+    else if (marks >= 70 && marks < 80)
         return 'C';
-    else if (marks >= 50&&marks<=60)
+    else if (marks >= 60 && marks < 70)
         return 'D';
-       
+    else if (marks >= 50 && marks < 60)
+        return 'E';
     else
         return 'F';
-    
+}
+
+int isIdUnique(int id)
+{
+    FILE *fp = fopen("data.txt", "r");
+    if (fp == NULL)
+    {
+        return 1; // File doesn't exist, so any ID is unique
+    }
+
+    Student s;
+    while (fread(&s, sizeof(Student), 1, fp))
+    {
+        if (s.id == id)
+        {
+            fclose(fp);
+            return 0; // ID already exists
+        }
+    }
+
+    fclose(fp);
+    return 1; // ID is unique
 }
 
 void addStudent()
 {
-    FILE *fp = fopen("data.txt", "a");
     Student s;
     printf("Enter ID: ");
     scanf("%d", &s.id);
+
+    // Check if ID is unique
+    if (!isIdUnique(s.id))
+    {
+        printf("Error: Student with ID %d already exists!\n", s.id);
+        return;
+    }
+
     printf("Enter Name: ");
     scanf(" %[^\n]", s.name);
     printf("Enter Marks: ");
     scanf("%f", &s.marks);
+
+    FILE *fp = fopen("data.txt", "a");
+    if (fp == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
     fwrite(&s, sizeof(Student), 1, fp);
     fclose(fp);
     printf("Student added successfully!\n");
@@ -38,9 +75,15 @@ void addStudent()
 void displayStudents()
 {
     FILE *fp = fopen("data.txt", "r");
+    if (fp == NULL)
+    {
+        printf("No student records found.\n");
+        return;
+    }
+
     Student s;
-    printf("ID   \t    Name\t\t    Marks\t     Grade\n");
-    printf("------------------------------------------\n");
+    printf("ID\t Name\t   Marks\t    Grade\n");
+    printf("----------------------------\n");
     while (fread(&s, sizeof(Student), 1, fp))
     {
         printf("%d\t%-15s\t%.2f\t%c\n", s.id, s.name, s.marks, getGrade(s.marks));
@@ -51,6 +94,12 @@ void displayStudents()
 void searchStudent(int id)
 {
     FILE *fp = fopen("data.txt", "r");
+    if (fp == NULL)
+    {
+        printf("No student records found.\n");
+        return;
+    }
+
     Student s;
     int found = 0;
     while (fread(&s, sizeof(Student), 1, fp))
@@ -70,7 +119,20 @@ void searchStudent(int id)
 void deleteStudent(int id)
 {
     FILE *fp = fopen("data.txt", "r");
+    if (fp == NULL)
+    {
+        printf("No student records found.\n");
+        return;
+    }
+
     FILE *temp = fopen("temp.txt", "w");
+    if (temp == NULL)
+    {
+        printf("Error creating temporary file.\n");
+        fclose(fp);
+        return;
+    }
+
     Student s;
     int found = 0;
     while (fread(&s, sizeof(Student), 1, fp))
@@ -82,8 +144,10 @@ void deleteStudent(int id)
     }
     fclose(fp);
     fclose(temp);
+
     remove("data.txt");
     rename("temp.txt", "data.txt");
+
     if (found)
         printf("Record deleted.\n");
     else
@@ -93,7 +157,20 @@ void deleteStudent(int id)
 void updateStudent(int id)
 {
     FILE *fp = fopen("data.txt", "r");
+    if (fp == NULL)
+    {
+        printf("No student records found.\n");
+        return;
+    }
+
     FILE *temp = fopen("temp.txt", "w");
+    if (temp == NULL)
+    {
+        printf("Error creating temporary file.\n");
+        fclose(fp);
+        return;
+    }
+
     Student s;
     int found = 0;
     while (fread(&s, sizeof(Student), 1, fp))
@@ -110,11 +187,12 @@ void updateStudent(int id)
     }
     fclose(fp);
     fclose(temp);
+
     remove("data.txt");
     rename("temp.txt", "data.txt");
+
     if (found)
         printf("Record updated.\n");
     else
         printf("Record not found.\n");
 }
-

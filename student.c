@@ -25,7 +25,7 @@ int isIdUnique(int id)
     FILE *fp = fopen("data.txt", "r");
     if (fp == NULL)
     {
-        return 1; // File doesn't exist, so any ID is unique
+        return 1; 
     }
 
     Student s;
@@ -34,12 +34,12 @@ int isIdUnique(int id)
         if (s.id == id)
         {
             fclose(fp);
-            return 0; // ID already exists
+            return 0; 
         }
     }
 
     fclose(fp);
-    return 1; // ID is unique
+    return 1; 
 }
 
 void addStudent()
@@ -48,7 +48,7 @@ void addStudent()
     printf("Enter ID: ");
     scanf("%d", &s.id);
 
-    // Check if ID is unique
+    
     if (!isIdUnique(s.id))
     {
         printf("Error: Student with ID %d already exists!\n", s.id);
@@ -57,7 +57,7 @@ void addStudent()
 
     printf("Enter Name: ");
     scanf(" %[^\n]", s.name);
-    printf("Enter Marks: ");
+    printf("Enter Marks out of 100: ");
     scanf("%f", &s.marks);
 
     FILE *fp = fopen("data.txt", "a");

@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,7 +47,6 @@ void addStudent()
     printf("Enter ID: ");
     scanf("%d", &s.id);
 
-    
     if (!isIdUnique(s.id))
     {
         printf("Error: Student with ID %d already exists!\n", s.id);
@@ -57,8 +55,15 @@ void addStudent()
 
     printf("Enter Name: ");
     scanf(" %[^\n]", s.name);
-    printf("Enter Marks out of 100: ");
-    scanf("%f", &s.marks);
+    
+    // Validate marks input
+    do {
+        printf("Enter Marks (0-100): ");
+        scanf("%f", &s.marks);
+        if (s.marks < 0 || s.marks > 100) {
+            printf("Invalid marks! Please enter a value between 0 and 100.\n");
+        }
+    } while (s.marks < 0 || s.marks > 100);
 
     FILE *fp = fopen("data.txt", "a");
     if (fp == NULL)
@@ -179,8 +184,16 @@ void updateStudent(int id)
         {
             printf("Enter new name: ");
             scanf(" %[^\n]", s.name);
-            printf("Enter new marks: ");
-            scanf("%f", &s.marks);
+            
+           
+            do {
+                printf("Enter new marks (0-100): ");
+                scanf("%f", &s.marks);
+                if (s.marks < 0 || s.marks > 100) {
+                    printf("Invalid marks! Please enter a value between 0 and 100.\n");
+                }
+            } while (s.marks < 0 || s.marks > 100);
+            
             found = 1;
         }
         fwrite(&s, sizeof(Student), 1, temp);
@@ -196,3 +209,6 @@ void updateStudent(int id)
     else
         printf("Record not found.\n");
 }
+
+
+    
